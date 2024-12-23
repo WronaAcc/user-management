@@ -5,16 +5,16 @@ import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth/users") // Chronione endpointy
 public class UserController {
 
     @Autowired
@@ -36,11 +36,11 @@ public class UserController {
         userService.deleteById(id);
     }
 
-    // Nowy endpoint: przypisywanie roli do użytkownika
     @PutMapping("/{userId}/roles/{roleId}")
     public User assignRoleToUser(@PathVariable Long userId, @PathVariable Long roleId) {
         return userService.assignRoleToUser(userId, roleId);
     }
+
     @DeleteMapping("/{userId}/roles/{roleId}")
     public User removeRoleFromUser(@PathVariable Long userId, @PathVariable Long roleId) {
         return userService.removeRoleFromUser(userId, roleId);

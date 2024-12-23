@@ -26,7 +26,7 @@ public class Role {
     @ManyToMany(mappedBy = "roles", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<User> users = new HashSet<>();
 
-    // Gettery i Settery
+    // Getters and Setters
     public Long getId() {
         return id;
     }

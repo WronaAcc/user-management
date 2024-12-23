@@ -12,10 +12,14 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Zapytanie do filtrowania użytkowników po nazwie roli
+    // Filtering users by their role
     @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
     List<User> findUsersByRoleName(@Param("roleName") String roleName);
 
-    // Zapytanie do znajdowania użytkownika po nazwie użytkownika
+    // Finding user with his username
     Optional<User> findByUsername(String username);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.username = :username")
+    Optional<User> findByUsernameWithRoles(@Param("username") String username);
+
 }

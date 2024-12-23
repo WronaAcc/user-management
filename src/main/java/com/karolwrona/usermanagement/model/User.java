@@ -1,6 +1,8 @@
 package com.karolwrona.usermanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
@@ -10,7 +12,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@JsonIgnoreProperties("roles") // Ignoruj serializację ról z użytkownika
+@JsonIgnoreProperties("roles") // Ignore serialization of user rolesI
 public class User {
 
     @Id
@@ -25,6 +27,7 @@ public class User {
     @Column(nullable = false)
     @NotBlank(message = "Password cannot be empty")
     @Size(min = 6, message = "Password must be at least 6 characters long")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -33,10 +36,10 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @JsonIgnoreProperties("users") // Ignoruj serializację użytkowników z roli
+    @JsonIgnoreProperties("users") // Ignore serialization of user roles
     private Set<Role> roles = new HashSet<>();
 
-    // Gettery i Settery
+    // Getters and Setters
     public Long getId() {
         return id;
     }

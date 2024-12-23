@@ -21,21 +21,21 @@ public class UserService {
     private RoleRepository roleRepository;
 
     /**
-     * Pobierz wszystkich użytkowników.
+     * Get all users
      */
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
     /**
-     * Pobierz użytkowników z daną rolą.
+     * Get users with exact role
      */
     public List<User> findUsersByRole(String roleName) {
         return userRepository.findUsersByRoleName(roleName);
     }
 
     /**
-     * Zapisz nowego użytkownika. Sprawdza, czy użytkownik o podanym username istnieje.
+     * Add new user
      */
     public User save(User user) {
         Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
@@ -46,21 +46,21 @@ public class UserService {
     }
 
     /**
-     * Usuń użytkownika po ID.
+     * Delete user by ID
      */
     public void deleteById(Long id) {
         userRepository.deleteById(id);
     }
 
     /**
-     * Pobierz użytkownika po ID.
+     * Get user by ID
      */
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
 
     /**
-     * Przypisz rolę do użytkownika.
+     * Add user role
      */
     @Transactional
     public User assignRoleToUser(Long userId, Long roleId) {
@@ -78,7 +78,7 @@ public class UserService {
     }
 
     /**
-     * Usuń rolę od użytkownika.
+     * Delete user role
      */
     @Transactional
     public User removeRoleFromUser(Long userId, Long roleId) {
@@ -94,8 +94,10 @@ public class UserService {
         user.removeRole(role);
         return userRepository.save(user);
     }
-
-    public Optional<User> findByUsername(String username) {
+    /**
+     * Find user by username
+     */
+     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 

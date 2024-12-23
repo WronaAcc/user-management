@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/auth/roles") // Chronione endpointy
 public class RoleController {
 
     @Autowired
