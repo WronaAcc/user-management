@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/auth/users") // Chronione endpointy
+@RequestMapping("/api/auth/users")
 public class UserController {
 
     @Autowired

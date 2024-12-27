@@ -36,6 +36,10 @@ dependencies {
 	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+	// Test
+
+	testImplementation 'org.springframework.security:spring-security-test'
+
 	// Exclude default Logback to prevent conflicts
 	configurations {
 		all {

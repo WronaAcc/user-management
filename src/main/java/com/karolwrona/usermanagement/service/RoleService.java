@@ -23,10 +23,17 @@ public class RoleService {
     }
 
     public Role save(Role role) {
+        roleRepository.findByName(role.getName())
+                .ifPresent(existingRole -> {
+                    throw new IllegalArgumentException("Role with this name already exists: " + role.getName());
+                });
         return roleRepository.save(role);
     }
 
     public void deleteById(Long id) {
+        if (!roleRepository.existsById(id)) {
+            throw new IllegalArgumentException("Role with ID " + id + " does not exist");
+        }
         roleRepository.deleteById(id);
     }
 }

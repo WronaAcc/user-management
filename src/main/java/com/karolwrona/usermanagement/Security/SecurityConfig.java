@@ -17,13 +17,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for API endpoints
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/public/**").permitAll() // Public endpoints
-                        .requestMatchers("/api/auth/**").hasAnyRole("USER", "ADMIN") // Auth endpoints require roles
-                        .anyRequest().authenticated() // All other requests require authentication
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/auth/**").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().authenticated()
                 )
-                .httpBasic(httpBasic -> httpBasic.realmName("User Management API")) // Modern way to configure HTTP Basic Auth
+                .httpBasic(httpBasic -> httpBasic.realmName("User Management API"))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -35,7 +35,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Use BCrypt for password hashing
+        return new BCryptPasswordEncoder();
     }
 
     @Bean

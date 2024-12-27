@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/public") // Publiczne endpointy
+@RequestMapping("/api/public")
 public class AuthController {
 
     @Autowired
@@ -18,6 +18,7 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private RoleService roleService;
 
@@ -27,13 +28,17 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Password cannot be null or empty");
         }
 
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            return ResponseEntity.badRequest().body("Username cannot be null or empty");
+        }
+
         Role userRole = roleService.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         user.addRole(userRole);
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.save(user);
+
         return ResponseEntity.ok("User registered successfully");
     }
 }

@@ -38,10 +38,10 @@ public class UserService {
      * Add new user
      */
     public User save(User user) {
-        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser.isPresent()) {
-            throw new RuntimeException("User with this username already exists");
-        }
+        userRepository.findByUsername(user.getUsername())
+                .ifPresent(existingUser -> {
+                    throw new IllegalArgumentException("User with this username already exists: " + user.getUsername());
+                });
         return userRepository.save(user);
     }
 
@@ -49,6 +49,9 @@ public class UserService {
      * Delete user by ID
      */
     public void deleteById(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new IllegalArgumentException("User with ID " + id + " does not exist");
+        }
         userRepository.deleteById(id);
     }
 
@@ -65,15 +68,14 @@ public class UserService {
     @Transactional
     public User assignRoleToUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + roleId));
 
-        if (user.getRoles().contains(role)) {
-            throw new RuntimeException("User already has this role assigned");
+        if (!user.getRoles().add(role)) {
+            throw new IllegalStateException("User already has this role assigned");
         }
 
-        user.addRole(role);
         return userRepository.save(user);
     }
 
@@ -83,22 +85,21 @@ public class UserService {
     @Transactional
     public User removeRoleFromUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + roleId));
 
-        if (!user.getRoles().contains(role)) {
-            throw new RuntimeException("User does not have this role");
+        if (!user.getRoles().remove(role)) {
+            throw new IllegalStateException("User does not have this role assigned");
         }
 
-        user.removeRole(role);
         return userRepository.save(user);
     }
+
     /**
      * Find user by username
      */
-     public Optional<User> findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
-
 }
