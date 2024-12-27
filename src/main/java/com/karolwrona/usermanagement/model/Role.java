@@ -1,7 +1,6 @@
 package com.karolwrona.usermanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
@@ -22,11 +21,10 @@ public class Role {
     @Pattern(regexp = "^ROLE_.*", message = "Role name must start with 'ROLE_'")
     private String name;
 
-    @JsonIgnore
-    @ManyToMany(mappedBy = "roles", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonBackReference
+    @ManyToMany(mappedBy = "roles", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private Set<User> users = new HashSet<>();
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -61,18 +59,5 @@ public class Role {
     public void removeUser(User user) {
         this.users.remove(user);
         user.getRoles().remove(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return name.equals(role.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
     }
 }

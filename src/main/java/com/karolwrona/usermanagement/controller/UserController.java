@@ -1,5 +1,6 @@
 package com.karolwrona.usermanagement.controller;
 
+import com.karolwrona.usermanagement.DTOs.UserDTO;
 import com.karolwrona.usermanagement.model.Role;
 import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.service.UserService;
@@ -67,9 +68,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = userService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + id));
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        User user = userService.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(userService.mapToUserDTO(user));
     }
 }

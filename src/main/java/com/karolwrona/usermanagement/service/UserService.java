@@ -1,5 +1,6 @@
 package com.karolwrona.usermanagement.service;
 
+import com.karolwrona.usermanagement.DTOs.UserDTO;
 import com.karolwrona.usermanagement.model.Role;
 import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.repository.RoleRepository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -43,6 +45,14 @@ public class UserService {
                     throw new IllegalArgumentException("User with this username already exists: " + user.getUsername());
                 });
         return userRepository.save(user);
+    }
+
+    public UserDTO mapToUserDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setUsername(user.getUsername());
+        userDTO.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+        return userDTO;
     }
 
     /**
