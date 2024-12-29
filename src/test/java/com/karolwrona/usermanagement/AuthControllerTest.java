@@ -47,7 +47,7 @@ class AuthControllerTest {
         role.setId(1L);
         role.setName("ROLE_USER");
 
-        when(roleService.findByName("ROLE_USER")).thenReturn(Optional.of(role));
+        when(roleService.findEntityByName("ROLE_USER")).thenReturn(Optional.of(role));
         when(passwordEncoder.encode(any(CharSequence.class))).thenReturn("encodedPassword");
         when(userService.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
@@ -62,7 +62,8 @@ class AuthControllerTest {
                 """;
 
         mockMvc.perform(post("/api/public/register")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON) // Określenie typu treści
+                        .accept(MediaType.APPLICATION_JSON) // Oczekiwanie JSON w odpowiedzi
                         .content(newUserJson))
                 .andExpect(status().isOk())
                 .andExpect(content().string("User registered successfully"));
@@ -78,7 +79,8 @@ class AuthControllerTest {
                 """;
 
         mockMvc.perform(post("/api/public/register")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON) // Określenie typu treści
+                        .accept(MediaType.APPLICATION_JSON) // Oczekiwanie JSON w odpowiedzi
                         .content(invalidUserJson))
                 .andExpect(status().isBadRequest());
     }

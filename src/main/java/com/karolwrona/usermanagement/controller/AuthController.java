@@ -1,5 +1,6 @@
 package com.karolwrona.usermanagement.controller;
 
+import com.karolwrona.usermanagement.DTOs.UserDTO;
 import com.karolwrona.usermanagement.model.Role;
 import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.service.RoleService;
@@ -23,21 +24,24 @@ public class AuthController {
     private RoleService roleService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
+        if (userDTO.getPassword() == null || userDTO.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body("Password cannot be null or empty");
         }
 
-        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+        if (userDTO.getUsername() == null || userDTO.getUsername().isEmpty()) {
             return ResponseEntity.badRequest().body("Username cannot be null or empty");
         }
 
-        Role userRole = roleService.findByName("ROLE_USER")
+        Role userRole = roleService.findEntityByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.addRole(userRole);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.save(user);
+
+        userService.save(userDTO);
 
         return ResponseEntity.ok("User registered successfully");
     }

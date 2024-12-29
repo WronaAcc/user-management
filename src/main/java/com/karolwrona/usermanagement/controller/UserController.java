@@ -1,15 +1,11 @@
 package com.karolwrona.usermanagement.controller;
 
 import com.karolwrona.usermanagement.DTOs.UserDTO;
-import com.karolwrona.usermanagement.model.Role;
-import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Set;
@@ -21,55 +17,86 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * Get all users
+     */
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userService.findAll();
     }
 
+    /**
+     * Create a new user
+     */
     @PostMapping
-    public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
-        User createUser = userService.save(user);
-        return ResponseEntity.ok(createUser);
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
+        UserDTO createdUser = userService.save(userDTO);
+        return ResponseEntity.ok(createdUser);
     }
 
+    /**
+     * Delete user by ID
+     */
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Assign a role to user
+     */
     @PutMapping("/{userId}/roles/{roleId}")
-    public User assignRoleToUser(@PathVariable Long userId, @PathVariable Long roleId) {
-        return userService.assignRoleToUser(userId, roleId);
+    public ResponseEntity<UserDTO> assignRoleToUser(@PathVariable Long userId, @PathVariable Long roleId) {
+        UserDTO updatedUser = userService.assignRoleToUser(userId, roleId);
+        return ResponseEntity.ok(updatedUser);
     }
 
+    /**
+     * Remove a role from user
+     */
     @DeleteMapping("/{userId}/roles/{roleId}")
-    public User removeRoleFromUser(@PathVariable Long userId, @PathVariable Long roleId) {
-        return userService.removeRoleFromUser(userId, roleId);
+    public ResponseEntity<UserDTO> removeRoleFromUser(@PathVariable Long userId, @PathVariable Long roleId) {
+        UserDTO updatedUser = userService.removeRoleFromUser(userId, roleId);
+        return ResponseEntity.ok(updatedUser);
     }
 
+    /**
+     * Get users by role name
+     */
     @GetMapping("/roles/{roleName}")
-    public ResponseEntity<List<User>> getUserByRole(@PathVariable String roleName) {
-        List<User> users = userService.findUsersByRole(roleName);
+    public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable String roleName) {
+        List<UserDTO> users = userService.findUsersByRole(roleName);
         return ResponseEntity.ok(users);
     }
 
+    /**
+     * Get roles for a specific user
+     */
     @GetMapping("/{id}/roles")
-    public ResponseEntity<Set<Role>> getRolesForUser(@PathVariable Long id) {
-        User user = userService.findById(id)
+    public ResponseEntity<Set<String>> getRolesForUser(@PathVariable Long id) {
+        UserDTO userDTO = userService.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(user.getRoles());
+        return ResponseEntity.ok(userDTO.getRoles());
     }
 
+    /**
+     * Get user by username
+     */
     @GetMapping(params = "username")
-    public ResponseEntity<User> getUserByUsername(@RequestParam String username) {
-        User user = userService.findByUsername(username)
+    public ResponseEntity<UserDTO> getUserByUsername(@RequestParam String username) {
+        UserDTO userDTO = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userDTO);
     }
 
+    /**
+     * Get user by ID
+     */
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        User user = userService.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(userService.mapToUserDTO(user));
+        UserDTO userDTO = userService.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(userDTO);
     }
 }

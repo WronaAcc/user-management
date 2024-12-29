@@ -1,5 +1,6 @@
 package com.karolwrona.usermanagement;
 
+import com.karolwrona.usermanagement.DTOs.UserDTO;
 import com.karolwrona.usermanagement.model.Role;
 import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.repository.RoleRepository;
@@ -52,19 +53,26 @@ class UserServiceTest {
 
     @Test
     void shouldAssignRoleToUser() {
-        User updatedUser = userService.assignRoleToUser(1L, 1L);
+        // Testowana metoda
+        UserDTO updatedUser = userService.assignRoleToUser(1L, 1L);
 
-        assertTrue(updatedUser.getRoles().contains(testRole));
+        // Asercje
+        assertNotNull(updatedUser);
+        assertTrue(updatedUser.getRoles().contains("ROLE_USER"), "User should have 'ROLE_USER' role assigned");
         verify(userRepository, times(1)).save(testUser);
     }
 
     @Test
     void shouldRemoveRoleFromUser() {
+        // Dodanie roli do użytkownika
         testUser.addRole(testRole);
 
-        User updatedUser = userService.removeRoleFromUser(1L, 1L);
+        // Testowana metoda
+        UserDTO updatedUser = userService.removeRoleFromUser(1L, 1L);
 
-        assertFalse(updatedUser.getRoles().contains(testRole));
+        // Asercje
+        assertNotNull(updatedUser);
+        assertFalse(updatedUser.getRoles().contains("ROLE_USER"), "User should not have 'ROLE_USER' role anymore");
         verify(userRepository, times(1)).save(testUser);
     }
 }

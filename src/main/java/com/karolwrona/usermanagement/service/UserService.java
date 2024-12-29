@@ -11,48 +11,51 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    private RoleRepository roleRepository;
+    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+    }
 
     /**
      * Get all users
      */
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDTO> findAll() {
+        return userRepository.findAll().stream()
+                .map(this::mapToUserDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get users with exact role
      */
-    public List<User> findUsersByRole(String roleName) {
-        return userRepository.findUsersByRoleName(roleName);
+    public List<UserDTO> findUsersByRole(String roleName) {
+        return userRepository.findUsersByRoleName(roleName).stream()
+                .map(this::mapToUserDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Add new user
      */
-    public User save(User user) {
-        userRepository.findByUsername(user.getUsername())
+    public UserDTO save(UserDTO userDTO) {
+        userRepository.findByUsername(userDTO.getUsername())
                 .ifPresent(existingUser -> {
-                    throw new IllegalArgumentException("User with this username already exists: " + user.getUsername());
+                    throw new IllegalArgumentException("User with this username already exists: " + userDTO.getUsername());
                 });
-        return userRepository.save(user);
-    }
 
-    public UserDTO mapToUserDTO(User user) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(user.getId());
-        userDTO.setUsername(user.getUsername());
-        userDTO.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
-        return userDTO;
+        User user = mapToEntity(userDTO);
+        user = userRepository.save(user);
+        return mapToUserDTO(user);
     }
 
     /**
@@ -68,15 +71,15 @@ public class UserService {
     /**
      * Get user by ID
      */
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+    public Optional<UserDTO> findById(Long id) {
+        return userRepository.findById(id).map(this::mapToUserDTO);
     }
 
     /**
      * Add user role
      */
     @Transactional
-    public User assignRoleToUser(Long userId, Long roleId) {
+    public UserDTO assignRoleToUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
         Role role = roleRepository.findById(roleId)
@@ -86,14 +89,15 @@ public class UserService {
             throw new IllegalStateException("User already has this role assigned");
         }
 
-        return userRepository.save(user);
+        user = userRepository.save(user);
+        return mapToUserDTO(user);
     }
 
     /**
      * Delete user role
      */
     @Transactional
-    public User removeRoleFromUser(Long userId, Long roleId) {
+    public UserDTO removeRoleFromUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
         Role role = roleRepository.findById(roleId)
@@ -103,13 +107,43 @@ public class UserService {
             throw new IllegalStateException("User does not have this role assigned");
         }
 
-        return userRepository.save(user);
+        user = userRepository.save(user);
+        return mapToUserDTO(user);
     }
 
     /**
      * Find user by username
      */
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public Optional<UserDTO> findByUsername(String username) {
+        return userRepository.findByUsername(username).map(this::mapToUserDTO);
+    }
+
+    /**
+     * Map User to UserDTO
+     */
+    public UserDTO mapToUserDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setUsername(user.getUsername());
+        userDTO.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+        return userDTO;
+    }
+
+    /**
+     * Map UserDTO to User
+     */
+    public User mapToEntity(UserDTO userDTO) {
+        User user = new User();
+        user.setId(userDTO.getId());
+        user.setUsername(userDTO.getUsername());
+
+        if (userDTO.getRoles() != null) {
+            Set<Role> roles = userDTO.getRoles().stream()
+                    .map(roleName -> roleRepository.findByName(roleName)
+                            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleName)))
+                    .collect(Collectors.toSet());
+            user.setRoles(roles);
+        }
+        return user;
     }
 }
