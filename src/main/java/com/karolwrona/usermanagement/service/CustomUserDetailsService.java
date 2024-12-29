@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getPassword(),
                 user.getRoles().stream()
                         .map(role -> new SimpleGrantedAuthority(role.getName()))
-                        .collect(Collectors.toSet()) // Zmieniono na `Set` dla uniknięcia duplikatów
+                        .collect(Collectors.toSet())
         );
     }
 }

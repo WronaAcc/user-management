@@ -33,7 +33,7 @@ public class User {
 
     @Column(nullable = false)
     @NotBlank(message = "Password cannot be empty")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})

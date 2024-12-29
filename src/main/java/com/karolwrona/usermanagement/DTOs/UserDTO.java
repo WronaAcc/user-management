@@ -1,4 +1,5 @@
 package com.karolwrona.usermanagement.DTOs;
+import jakarta.validation.constraints.Pattern;
 
 import java.util.Set;
 
@@ -6,11 +7,15 @@ public class UserDTO {
 
     private Long id;
     private String username;
+    @Pattern(
+            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$",
+            message = "Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters."
+    )
     private String password;
     private Set<String> roles;
     private String email;
 
-    // Gettery i settery
+    // Getters i setters
     public Long getId() {
         return id;
     }

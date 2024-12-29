@@ -59,7 +59,6 @@ public class RoleService {
         roleDTO.setId(role.getId());
         roleDTO.setName(role.getName());
 
-        // Mapowanie Set<User> na Set<String> (nazwy użytkowników)
         roleDTO.setUsers(role.getUsers().stream()
                 .map(User::getUsername)
                 .collect(Collectors.toSet()));
@@ -72,7 +71,6 @@ public class RoleService {
         role.setId(roleDTO.getId());
         role.setName(roleDTO.getName());
 
-        // Mapowanie Set<String> na Set<User>
         if (roleDTO.getUsers() != null) {
             Set<User> users = roleDTO.getUsers().stream()
                     .map(username -> userRepository.findByUsername(username)

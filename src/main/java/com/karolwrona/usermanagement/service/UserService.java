@@ -6,12 +6,14 @@ import com.karolwrona.usermanagement.model.User;
 import com.karolwrona.usermanagement.repository.RoleRepository;
 import com.karolwrona.usermanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,11 +21,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -43,6 +47,7 @@ public class UserService {
                 .map(this::mapToUserDTO)
                 .collect(Collectors.toList());
     }
+
     /**
      * Delete user by ID
      */
@@ -110,6 +115,7 @@ public class UserService {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         userDTO.setUsername(user.getUsername());
+        userDTO.setEmail(user.getEmail());
         userDTO.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
         return userDTO;
     }
@@ -121,6 +127,12 @@ public class UserService {
         User user = new User();
         user.setId(userDTO.getId());
         user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+
+        // Ustawienie hasła, jeśli jest dostępne
+        if (userDTO.getPassword() != null) {
+            user.setPassword(userDTO.getPassword());
+        }
 
         if (userDTO.getRoles() != null) {
             Set<Role> roles = userDTO.getRoles().stream()
@@ -133,9 +145,9 @@ public class UserService {
     }
 
     /**
-     *Add user
-     * */
-     public UserDTO save(UserDTO userDTO) {
+     * Add user
+     */
+    public UserDTO save(UserDTO userDTO) {
         userRepository.findByUsername(userDTO.getUsername())
                 .ifPresent(existingUser -> {
                     throw new IllegalArgumentException("User with this username already exists: " + userDTO.getUsername());
@@ -146,8 +158,29 @@ public class UserService {
                     throw new IllegalArgumentException("User with this email already exists: " + userDTO.getEmail());
                 });
 
+        if (!PasswordValidator.isValid(userDTO.getPassword())) {
+            throw new IllegalArgumentException("Password does not meet strength requirements.");
+        }
+
         User user = mapToEntity(userDTO);
+        // Zakodowanie hasła przed zapisaniem
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user = userRepository.save(user);
         return mapToUserDTO(user);
+    }
+
+    /**
+     * Password validation
+     */
+    public static class PasswordValidator {
+
+        private static final String PASSWORD_PATTERN =
+                "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$";
+
+        private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
+
+        public static boolean isValid(String password) {
+            return password != null && pattern.matcher(password).matches();
+        }
     }
 }
