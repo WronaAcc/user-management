@@ -43,21 +43,6 @@ public class UserService {
                 .map(this::mapToUserDTO)
                 .collect(Collectors.toList());
     }
-
-    /**
-     * Add new user
-     */
-    public UserDTO save(UserDTO userDTO) {
-        userRepository.findByUsername(userDTO.getUsername())
-                .ifPresent(existingUser -> {
-                    throw new IllegalArgumentException("User with this username already exists: " + userDTO.getUsername());
-                });
-
-        User user = mapToEntity(userDTO);
-        user = userRepository.save(user);
-        return mapToUserDTO(user);
-    }
-
     /**
      * Delete user by ID
      */
@@ -145,5 +130,24 @@ public class UserService {
             user.setRoles(roles);
         }
         return user;
+    }
+
+    /**
+     *Add user
+     * */
+     public UserDTO save(UserDTO userDTO) {
+        userRepository.findByUsername(userDTO.getUsername())
+                .ifPresent(existingUser -> {
+                    throw new IllegalArgumentException("User with this username already exists: " + userDTO.getUsername());
+                });
+
+        userRepository.findByEmail(userDTO.getEmail())
+                .ifPresent(existingUser -> {
+                    throw new IllegalArgumentException("User with this email already exists: " + userDTO.getEmail());
+                });
+
+        User user = mapToEntity(userDTO);
+        user = userRepository.save(user);
+        return mapToUserDTO(user);
     }
 }

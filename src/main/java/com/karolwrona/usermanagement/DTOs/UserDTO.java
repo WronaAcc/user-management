@@ -8,6 +8,7 @@ public class UserDTO {
     private String username;
     private String password;
     private Set<String> roles;
+    private String email;
 
     // Gettery i settery
     public Long getId() {
@@ -40,5 +41,13 @@ public class UserDTO {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
