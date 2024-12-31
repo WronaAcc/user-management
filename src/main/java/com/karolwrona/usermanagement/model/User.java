@@ -36,6 +36,9 @@ public class User {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
+    @Column(nullable = false)
+    private boolean isActive = false;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "user_roles",

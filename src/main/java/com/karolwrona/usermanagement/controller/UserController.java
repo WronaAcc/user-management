@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/auth/users")
+@RequestMapping("/api/auth")
 public class UserController {
 
     @Autowired
@@ -20,24 +20,33 @@ public class UserController {
     /**
      * Get all users
      */
-    @GetMapping
+    @GetMapping("/users")
     public List<UserDTO> getAllUsers() {
         return userService.findAll();
     }
 
     /**
-     * Create a new user
+     * Register a new user
      */
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
-        UserDTO createdUser = userService.save(userDTO);
-        return ResponseEntity.ok(createdUser);
+    @PostMapping("/register")
+    public ResponseEntity<String> registerUser(@Valid @RequestBody UserDTO userDTO) {
+        userService.register(userDTO);
+        return ResponseEntity.ok("Registration successful. Please check your email to activate your account.");
+    }
+
+    /**
+     * Activate user account
+     */
+    @GetMapping("/activate")
+    public ResponseEntity<String> activateAccount(@RequestParam String token) {
+        userService.activateUser(token);
+        return ResponseEntity.ok("Account activated successfully.");
     }
 
     /**
      * Delete user by ID
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
@@ -46,7 +55,7 @@ public class UserController {
     /**
      * Assign a role to user
      */
-    @PutMapping("/{userId}/roles/{roleId}")
+    @PutMapping("/users/{userId}/roles/{roleId}")
     public ResponseEntity<UserDTO> assignRoleToUser(@PathVariable Long userId, @PathVariable Long roleId) {
         UserDTO updatedUser = userService.assignRoleToUser(userId, roleId);
         return ResponseEntity.ok(updatedUser);
@@ -55,7 +64,7 @@ public class UserController {
     /**
      * Remove a role from user
      */
-    @DeleteMapping("/{userId}/roles/{roleId}")
+    @DeleteMapping("/users/{userId}/roles/{roleId}")
     public ResponseEntity<UserDTO> removeRoleFromUser(@PathVariable Long userId, @PathVariable Long roleId) {
         UserDTO updatedUser = userService.removeRoleFromUser(userId, roleId);
         return ResponseEntity.ok(updatedUser);
@@ -64,7 +73,7 @@ public class UserController {
     /**
      * Get users by role name
      */
-    @GetMapping("/roles/{roleName}")
+    @GetMapping("/users/roles/{roleName}")
     public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable String roleName) {
         List<UserDTO> users = userService.findUsersByRole(roleName);
         return ResponseEntity.ok(users);
@@ -73,7 +82,7 @@ public class UserController {
     /**
      * Get roles for a specific user
      */
-    @GetMapping("/{id}/roles")
+    @GetMapping("/users/{id}/roles")
     public ResponseEntity<Set<String>> getRolesForUser(@PathVariable Long id) {
         UserDTO userDTO = userService.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -83,7 +92,7 @@ public class UserController {
     /**
      * Get user by username
      */
-    @GetMapping(params = "username")
+    @GetMapping("/users")
     public ResponseEntity<UserDTO> getUserByUsername(@RequestParam String username) {
         UserDTO userDTO = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
@@ -93,7 +102,7 @@ public class UserController {
     /**
      * Get user by ID
      */
-    @GetMapping("/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         UserDTO userDTO = userService.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));

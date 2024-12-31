@@ -3,12 +3,17 @@ package com.karolwrona.usermanagement.service;
 import com.karolwrona.usermanagement.DTOs.UserDTO;
 import com.karolwrona.usermanagement.model.Role;
 import com.karolwrona.usermanagement.model.User;
+import com.karolwrona.usermanagement.repository.ActivationTokenRepository;
 import com.karolwrona.usermanagement.repository.RoleRepository;
 import com.karolwrona.usermanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.karolwrona.usermanagement.Mails.ActivationToken;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -22,12 +27,71 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ActivationTokenRepository activationTokenRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, ActivationTokenRepository activationTokenRepository, EmailService EmailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.activationTokenRepository = activationTokenRepository;
+        this.emailService = EmailService;
+    }
+
+    /**
+     * Register a new user and send activation email
+     */
+    public void register(UserDTO userDTO) {
+        User user = mapToEntity(userDTO);
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already in use");
+        }
+
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setActive(false); // Domyślnie konto nieaktywne
+        userRepository.save(user);
+
+        generateAndSendActivationEmail(user);
+    }
+
+
+    /**
+     * Activate user account
+     */
+    public void activateUser(String token) {
+        ActivationToken activationToken = activationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid activation token"));
+
+        if (activationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Activation token expired");
+        }
+
+        User user = activationToken.getUser();
+        user.setActive(true);
+        userRepository.save(user);
+
+        activationTokenRepository.delete(activationToken);
+    }
+
+    /**
+     * Generate and send activation email
+     */
+    private void generateAndSendActivationEmail(User user) {
+        String token = UUID.randomUUID().toString();
+        ActivationToken activationToken = new ActivationToken();
+        activationToken.setToken(token);
+        activationToken.setUser(user);
+        activationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
+        activationTokenRepository.save(activationToken);
+
+        String activationLink = "http://localhost:8080/api/auth/activate?token=" + token;
+        emailService.sendActivationEmail(user.getEmail(), activationLink);
     }
 
     /**
@@ -163,7 +227,6 @@ public class UserService {
         }
 
         User user = mapToEntity(userDTO);
-        // Zakodowanie hasła przed zapisaniem
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user = userRepository.save(user);
         return mapToUserDTO(user);
