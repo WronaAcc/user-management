@@ -3,6 +3,7 @@ package com.karolwrona.usermanagement.controller;
 import com.karolwrona.usermanagement.DTOs.UserDTO;
 import com.karolwrona.usermanagement.model.Role;
 import com.karolwrona.usermanagement.model.User;
+import com.karolwrona.usermanagement.repository.UserRepository;
 import com.karolwrona.usermanagement.service.RoleService;
 import com.karolwrona.usermanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ public class AuthController {
 
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
@@ -38,10 +41,11 @@ public class AuthController {
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.addRole(userRole);
 
-        userService.save(userDTO);
+        userRepository.save(user);
 
         return ResponseEntity.ok("User registered successfully");
     }

@@ -129,7 +129,6 @@ public class UserService {
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
 
-        // Ustawienie hasła, jeśli jest dostępne
         if (userDTO.getPassword() != null) {
             user.setPassword(userDTO.getPassword());
         }
@@ -163,7 +162,6 @@ public class UserService {
         }
 
         User user = mapToEntity(userDTO);
-        // Zakodowanie hasła przed zapisaniem
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user = userRepository.save(user);
         return mapToUserDTO(user);
